@@ -7,7 +7,7 @@ gulp.task('build', function() {
     gulp.src('index.js')
         .pipe(browserify({
             insertGlobals : true,
-            standalone : 'skynet-mobile-plugin-greeting',
+            standalone : 'skynet-mobile-plugin-fitbit',
             debug : true
         }))
         .pipe(rename('bundle.js'))
