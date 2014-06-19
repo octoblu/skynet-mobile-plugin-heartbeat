@@ -1,6 +1,6 @@
 {
   "name": "skynet-mobile-plugin-fitbit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Skynet Mobile Plugin for Fitbit",
   "main": "index.js",
   "scripts": {
