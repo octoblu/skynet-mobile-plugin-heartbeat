@@ -5,5 +5,5 @@ Skynet Plugin For Fitbit
 
 1. git clone https://github.com/skynetim/skynet-mobile-plugin-fitbit
 2. npm install
-...
+3. gulp
 
