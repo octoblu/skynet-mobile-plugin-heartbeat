@@ -1,4 +1,4 @@
-Skynet Plugin For Fitbit
+Skynet Plugin For Fitbit **IN DEVELOPMENT**
 ===========================
 
 # Install & Build

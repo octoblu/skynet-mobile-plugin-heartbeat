@@ -11,7 +11,10 @@
     "url": "git://github.com/skynetim/skynet-mobile-plugin-fitbit.git"
   },
   "keywords": [
-    "skynet-mobile-plugin"
+    "skynet-mobile-plugin",
+    "skynet-plugin",
+    "fitbit",
+    "btle"
   ],
   "author": "Octoblu, Inc",
   "license": "MIT",
