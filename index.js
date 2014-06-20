@@ -1,3 +1,5 @@
+var fitbit = requrie('./fitbit');
+
 function Plugin(messenger, options, api) {
     this.name = 'skynet-mobile-plugin-fitbit';
 
@@ -5,6 +7,8 @@ function Plugin(messenger, options, api) {
     this.options = options;
 
     this.api = api; // Mobile Specific
+
+    fitbit.init();
 
     return this;
 }
@@ -29,6 +33,10 @@ var messageSchema = {
     }
 };
 
+var getDefaultOptions = function(){
+
+}
+
 // Mobile Specific
 Plugin.prototype.onEnable = function () {
     this.api.logActivity({
@@ -47,6 +55,7 @@ Plugin.prototype.onDisable = function () {
 
 // Mobile Specific
 Plugin.prototype.onInstall = function () {
+
     this.api.logActivity({
         type: this.name,
         html: 'Fitbit plugin installed'
@@ -60,4 +69,10 @@ Plugin.prototype.destroy = function () {
         html: 'Destroying plugin'
     });
 
+};
+
+module.exports = {
+    Plugin: Plugin, // Required
+    optionsSchema: optionsSchema, // Optional
+    messageSchema: messageSchema // Optional
 };
