@@ -1,7 +1,7 @@
-var fitbit = requrie('./fitbit');
+var fitbit = require('./btle.js');
 
 function Plugin(messenger, options, api) {
-    this.name = 'skynet-mobile-plugin-fitbit';
+    this.name = 'skynet-mobile-plugin-heartbeat';
 
     this.messenger = messenger;
     this.options = options;
@@ -16,32 +16,27 @@ function Plugin(messenger, options, api) {
 var optionsSchema = {
     type: 'object',
     properties: {
-        fitbitName : {
-            type: 'string',
-            required: true
+        devices : {
+            type: 'array',
+            required: true,
+            items : {
+                type : "string"
+            }
         }
     }
 };
 
-var messageSchema = {
-    type: 'object',
-    properties: {
-        text: {
-            type: 'string',
-            required: true
-        }
-    }
-};
-
-var getDefaultOptions = function(){
-
+var getDefaultOptions = function(callback){
+    callback(null, {
+        devices : [] // TODO
+    });
 }
 
 // Mobile Specific
 Plugin.prototype.onEnable = function () {
     this.api.logActivity({
         type: this.name,
-        html: 'Fitbit plugin enabled'
+        html: 'Heartbeat plugin enabled'
     });
 };
 
@@ -49,7 +44,7 @@ Plugin.prototype.onEnable = function () {
 Plugin.prototype.onDisable = function () {
     this.api.logActivity({
         type: this.name,
-        html: 'Fitbit plugin disabled'
+        html: 'Heartbeat plugin disabled'
     });
 };
 
@@ -58,7 +53,7 @@ Plugin.prototype.onInstall = function () {
 
     this.api.logActivity({
         type: this.name,
-        html: 'Fitbit plugin installed'
+        html: 'Heartbeat plugin installed'
     });
 };
 
@@ -74,5 +69,4 @@ Plugin.prototype.destroy = function () {
 module.exports = {
     Plugin: Plugin, // Required
     optionsSchema: optionsSchema, // Optional
-    messageSchema: messageSchema // Optional
 };
