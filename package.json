@@ -1,6 +1,6 @@
 {
   "name": "skynet-mobile-plugin-heartbeat",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Skynet Mobile Plugin for Heartbeat",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,6 @@
   },
   "keywords": [
     "skynet-mobile-plugin",
-    "skynet-plugin",
     "heartbeat",
     "btle"
   ],
