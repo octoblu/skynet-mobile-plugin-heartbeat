@@ -1,7 +1,7 @@
 {
-  "name": "skynet-mobile-plugin-fitbit",
-  "version": "0.0.2",
-  "description": "Skynet Mobile Plugin for Fitbit",
+  "name": "skynet-mobile-plugin-heartbeat",
+  "version": "0.0.3git a",
+  "description": "Skynet Mobile Plugin for Heartbeat",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,10 +13,10 @@
   "keywords": [
     "skynet-mobile-plugin",
     "skynet-plugin",
-    "fitbit",
+    "heartbeat",
     "btle"
   ],
-  "author": "Octoblu, Inc",
+  "author": [ "Octoblu, Inc",  "Peter DeMartini"],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/skynetim/skynet-mobile-plugin-fitbit/issues"
