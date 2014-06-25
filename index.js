@@ -16,19 +16,16 @@ function Plugin(messenger, options, api) {
 var optionsSchema = {
     type: 'object',
     properties: {
-        devices : {
-            type: 'array',
-            required: true,
-            items : {
-                type : "string"
-            }
+        device : {
+            type: 'string',
+            required: true
         }
     }
 };
 
 var getDefaultOptions = function(callback){
     callback(null, {
-        devices : [] // TODO
+        device : '' // TODO
     });
 }
 
