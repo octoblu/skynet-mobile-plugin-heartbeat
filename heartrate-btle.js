@@ -203,14 +203,16 @@ function clearReconnectTimeout() {
 function servicesHeartSuccess(obj) {
     if (obj.status == 'discoveredServices') {
         var serviceUuids = config.serviceUuids;
-        for (var i = 0; i < serviceUuids.length; i++) {
-            var serviceUuid = serviceUuids[i];
+        if(serviceUuids) {
+            for (var i = 0; i < serviceUuids.length; i++) {
+                var serviceUuid = serviceUuids[i];
 
-            if (serviceUuid == config.serviceUuid) {
-                logIt('Finding heart rate characteristics');
-                var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuids': [config.measurementCharacteristicUuid]};
-                btle.characteristics(characteristicsHeartSuccess, characteristicsHeartError, paramsObj);
-                return;
+                if (serviceUuid == config.serviceUuid) {
+                    logIt('Finding heart rate characteristics');
+                    var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuids': [config.measurementCharacteristicUuid]};
+                    btle.characteristics(characteristicsHeartSuccess, characteristicsHeartError, paramsObj);
+                    return;
+                }
             }
         }
         logIt('Error: heart rate service not found');
@@ -229,14 +231,16 @@ function servicesHeartError(obj) {
 function characteristicsHeartSuccess(obj) {
     if (obj.status == 'discoveredCharacteristics') {
         var characteristicUuids = obj.characteristicUuids;
-        for (var i = 0; i < characteristicUuids.length; i++) {
-            logIt('Heart characteristics found, now discovering descriptor');
-            var characteristicUuid = characteristicUuids[i];
+        if(characteristicUuids) {
+            for (var i = 0; i < characteristicUuids.length; i++) {
+                logIt('Heart characteristics found, now discovering descriptor');
+                var characteristicUuid = characteristicUuids[i];
 
-            if (characteristicUuid == config.measurementCharacteristicUuid) {
-                var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
-                btle.descriptors(descriptorsHeartSuccess, descriptorsHeartError, paramsObj);
-                return;
+                if (characteristicUuid == config.measurementCharacteristicUuid) {
+                    var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
+                    btle.descriptors(descriptorsHeartSuccess, descriptorsHeartError, paramsObj);
+                    return;
+                }
             }
         }
         logIt('Error: Heart rate measurement characteristic not found.');
@@ -272,14 +276,16 @@ function descriptorsHeartError(obj) {
 function servicesBatterySuccess(obj) {
     if (obj.status == 'discoveredServices') {
         var serviceUuids = config.serviceUuids;
-        for (var i = 0; i < serviceUuids.length; i++) {
-            var serviceUuid = serviceUuids[i];
+        if(serviceUuids) {
+            for (var i = 0; i < serviceUuids.length; i++) {
+                var serviceUuid = serviceUuids[i];
 
-            if (serviceUuid == config.batteryServiceUuid) {
-                logIt('Found battery service, now finding characteristic');
-                var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuids': [config.batteryLevelCharacteristicUuid]};
-                btle.characteristics(characteristicsBatterySuccess, characteristicsBatteryError, paramsObj);
-                return;
+                if (serviceUuid == config.batteryServiceUuid) {
+                    logIt('Found battery service, now finding characteristic');
+                    var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuids': [config.batteryLevelCharacteristicUuid]};
+                    btle.characteristics(characteristicsBatterySuccess, characteristicsBatteryError, paramsObj);
+                    return;
+                }
             }
         }
         logIt('Error: battery service not found');
@@ -298,12 +304,14 @@ function servicesBatteryError(obj) {
 function characteristicsBatterySuccess(obj) {
     if (obj.status == 'discoveredCharacteristics') {
         var characteristicUuids = obj.characteristicUuids;
-        for (var i = 0; i < characteristicUuids.length; i++) {
-            var characteristicUuid = characteristicUuids[i];
+        if(characteristicUuids) {
+            for (var i = 0; i < characteristicUuids.length; i++) {
+                var characteristicUuid = characteristicUuids[i];
 
-            if (characteristicUuid == config.batteryLevelCharacteristicUuid) {
-                readBatteryLevel();
-                return;
+                if (characteristicUuid == config.batteryLevelCharacteristicUuid) {
+                    readBatteryLevel();
+                    return;
+                }
             }
         }
         logIt('Error: Battery characteristic not found.');
