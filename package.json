@@ -1,6 +1,6 @@
 {
   "name": "skynet-mobile-plugin-heartbeat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Skynet Mobile Plugin for Heartbeat",
   "main": "index.js",
   "scripts": {

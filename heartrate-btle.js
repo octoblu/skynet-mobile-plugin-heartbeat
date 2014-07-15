@@ -1,4 +1,4 @@
-var bluetoothle = window.plugins && window.plugins.bluetoothle ? window.plugins.bluetoothle : null;
+var bluetoothle = window.bluetoothle;
 
 var config = {};
 
