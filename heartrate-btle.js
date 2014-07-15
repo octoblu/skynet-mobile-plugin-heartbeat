@@ -499,7 +499,7 @@ module.exports = {
     init : function () {
 
         if(!btle){
-            return logIt('BTLE Plugin not found.');
+            return logIt('BTLE Plugin not found :( ');
         }
 
         btle.initialize(initializeSuccess, initializeError);
