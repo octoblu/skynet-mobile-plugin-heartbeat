@@ -1,5 +1,4 @@
-var bluetoothle = window.bluetoothle;
-
+var btle = window.bluetoothle;
 var config = {};
 
 config.addressKey = 'heartbeat_address';
@@ -30,7 +29,7 @@ function initializeSuccess(obj) {
         if (address == null) {
             logIt('Bluetooth initialized successfully, starting scan for heart rate devices.');
             var paramsObj = {'serviceUuids': [config.serviceUuid]};
-            bluetoothle.startScan(startScanSuccess, startScanError, paramsObj);
+            btle.startScan(startScanSuccess, startScanError, paramsObj);
         }
         else {
             connectDevice(address);
@@ -48,7 +47,7 @@ function initializeError(obj) {
 function startScanSuccess(obj) {
     if (obj.status == 'scanResult') {
         logIt('Stopping scan..');
-        bluetoothle.stopScan(stopScanSuccess, stopScanError);
+        btle.stopScan(stopScanSuccess, stopScanError);
         clearScanTimeout();
 
         window.localStorage.setItem(config.addressKey, obj.address);
@@ -69,7 +68,7 @@ function startScanError(obj) {
 
 function scanTimeout() {
     logIt('Scanning time out, stopping');
-    bluetoothle.stopScan(stopScanSuccess, stopScanError);
+    btle.stopScan(stopScanSuccess, stopScanError);
 }
 
 function clearScanTimeout() {
@@ -95,7 +94,7 @@ function stopScanError(obj) {
 function connectDevice(address) {
     logIt('Begining connection to: ' + address + ' with 5 second timeout');
     var paramsObj = {'address': address};
-    bluetoothle.connect(connectSuccess, connectError, paramsObj);
+    btle.connect(connectSuccess, connectError, paramsObj);
     connectTimer = setTimeout(connectTimeout, 5000);
 }
 
@@ -134,7 +133,7 @@ function clearConnectTimeout() {
 
 function tempDisconnectDevice() {
     logIt('Disconnecting from device to test reconnect');
-    bluetoothle.disconnect(tempDisconnectSuccess, tempDisconnectError);
+    btle.disconnect(tempDisconnectSuccess, tempDisconnectError);
 }
 
 function tempDisconnectSuccess(obj) {
@@ -156,7 +155,7 @@ function tempDisconnectError(obj) {
 
 function reconnect() {
     logIt('Reconnecting with 5 second timeout');
-    bluetoothle.reconnect(reconnectSuccess, reconnectError);
+    btle.reconnect(reconnectSuccess, reconnectError);
     reconnectTimer = setTimeout(reconnectTimeout, 5000);
 }
 
@@ -169,11 +168,11 @@ function reconnectSuccess(obj) {
         if (window.device.platform == iOSPlatform) {
             logIt('Discovering heart rate service');
             var paramsObj = {'serviceUuids': [config.serviceUuid]};
-            bluetoothle.services(servicesHeartSuccess, servicesHeartError, paramsObj);
+            btle.services(servicesHeartSuccess, servicesHeartError, paramsObj);
         }
         else if (window.device.platform == androidPlatform) {
             logIt('Beginning discovery');
-            bluetoothle.discover(discoverSuccess, discoverError);
+            btle.discover(discoverSuccess, discoverError);
         }
     }
     else if (obj.status == 'connecting') {
@@ -210,7 +209,7 @@ function servicesHeartSuccess(obj) {
             if (serviceUuid == config.serviceUuid) {
                 logIt('Finding heart rate characteristics');
                 var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuids': [config.measurementCharacteristicUuid]};
-                bluetoothle.characteristics(characteristicsHeartSuccess, characteristicsHeartError, paramsObj);
+                btle.characteristics(characteristicsHeartSuccess, characteristicsHeartError, paramsObj);
                 return;
             }
         }
@@ -236,7 +235,7 @@ function characteristicsHeartSuccess(obj) {
 
             if (characteristicUuid == config.measurementCharacteristicUuid) {
                 var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
-                bluetoothle.descriptors(descriptorsHeartSuccess, descriptorsHeartError, paramsObj);
+                btle.descriptors(descriptorsHeartSuccess, descriptorsHeartError, paramsObj);
                 return;
             }
         }
@@ -257,7 +256,7 @@ function descriptorsHeartSuccess(obj) {
     if (obj.status == 'discoveredDescriptors') {
         logIt('Discovered heart descriptors, now discovering battery service');
         var paramsObj = {'serviceUuids': [config.batteryServiceUuid]};
-        bluetoothle.services(servicesBatterySuccess, servicesBatteryError, paramsObj);
+        btle.services(servicesBatterySuccess, servicesBatteryError, paramsObj);
     }
     else {
         logIt('Unexpected descriptors heart status: ' + obj.status);
@@ -279,7 +278,7 @@ function servicesBatterySuccess(obj) {
             if (serviceUuid == config.batteryServiceUuid) {
                 logIt('Found battery service, now finding characteristic');
                 var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuids': [config.batteryLevelCharacteristicUuid]};
-                bluetoothle.characteristics(characteristicsBatterySuccess, characteristicsBatteryError, paramsObj);
+                btle.characteristics(characteristicsBatterySuccess, characteristicsBatteryError, paramsObj);
                 return;
             }
         }
@@ -340,17 +339,17 @@ function discoverError(obj) {
 function readBatteryLevel() {
     logIt('Reading battery level');
     var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuid': config.batteryLevelCharacteristicUuid};
-    bluetoothle.read(readSuccess, readError, paramsObj);
+    btle.read(readSuccess, readError, paramsObj);
 }
 
 function readSuccess(obj) {
     if (obj.status == 'read') {
-        var bytes = bluetoothle.encodedStringToBytes(obj.value);
+        var bytes = btle.encodedStringToBytes(obj.value);
         logIt('Battery level: ' + bytes[0]);
 
         logIt('Subscribing to heart rate for 5 seconds');
         var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
-        bluetoothle.subscribe(subscribeSuccess, subscribeError, paramsObj);
+        btle.subscribe(subscribeSuccess, subscribeError, paramsObj);
         setTimeout(unsubscribeDevice, 5000);
     }
     else {
@@ -369,7 +368,7 @@ function subscribeSuccess(obj) {
         logIt('Subscription data received');
 
         //Parse array of int32 into uint8
-        var bytes = bluetoothle.encodedStringToBytes(obj.value);
+        var bytes = btle.encodedStringToBytes(obj.value);
 
         //Check for data
         if (bytes.length == 0) {
@@ -413,7 +412,7 @@ function subscribeError(msg) {
 function unsubscribeDevice() {
     logIt('Unsubscribing heart service');
     var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
-    bluetoothle.unsubscribe(unsubscribeSuccess, unsubscribeError, paramsObj);
+    btle.unsubscribe(unsubscribeSuccess, unsubscribeError, paramsObj);
 }
 
 function unsubscribeSuccess(obj) {
@@ -422,7 +421,7 @@ function unsubscribeSuccess(obj) {
 
         logIt('Reading client configuration descriptor');
         var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid, 'descriptorUuid': config.clientCharacteristicConfigDescriptorUuid};
-        bluetoothle.readDescriptor(readDescriptorSuccess, readDescriptorError, paramsObj);
+        btle.readDescriptor(readDescriptorSuccess, readDescriptorError, paramsObj);
     }
     else {
         logIt('Unexpected unsubscribe status: ' + obj.status);
@@ -437,7 +436,7 @@ function unsubscribeError(obj) {
 
 function readDescriptorSuccess(obj) {
     if (obj.status == 'readDescriptor') {
-        var bytes = bluetoothle.encodedStringToBytes(obj.value);
+        var bytes = btle.encodedStringToBytes(obj.value);
         var u16Bytes = new Uint16Array(bytes.buffer);
         logIt('Read descriptor value: ' + u16Bytes[0]);
         disconnectDevice();
@@ -454,7 +453,7 @@ function readDescriptorError(obj) {
 }
 
 function disconnectDevice() {
-    bluetoothle.disconnect(disconnectSuccess, disconnectError);
+    btle.disconnect(disconnectSuccess, disconnectError);
 }
 
 function disconnectSuccess(obj) {
@@ -475,7 +474,7 @@ function disconnectError(obj) {
 }
 
 function closeDevice() {
-    bluetoothle.close(closeSuccess, closeError);
+    btle.close(closeSuccess, closeError);
 }
 
 function closeSuccess(obj) {
@@ -499,11 +498,11 @@ module.exports = {
     
     init : function () {
 
-        if(!bluetoothle){
+        if(!btle){
             return logIt('BTLE Plugin not found.');
         }
 
-        bluetoothle.initialize(initializeSuccess, initializeError);
+        btle.initialize(initializeSuccess, initializeError);
 
     },
 
