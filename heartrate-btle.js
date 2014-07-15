@@ -391,6 +391,8 @@ function subscribeSuccess(obj) {
             hr = u8;
         }
         logIt('Heart Rate: ' + hr);
+
+        $(document).trigger('heart-rate', hr);
     }
     else if (obj.status == 'subscribed') {
         logIt('Subscription started');
@@ -487,7 +489,6 @@ function closeError(obj) {
     logIt('Close error: ' + obj.error + ' - ' + obj.message);
 }
 
-
 module.exports = {
 
     config : function(newConfig){
@@ -504,6 +505,10 @@ module.exports = {
 
         bluetoothle.initialize(initializeSuccess, initializeError);
 
+    },
+
+    destroy : function(){
+        window.localStorage.removeItem(config.addressKey);
     }
 
 };

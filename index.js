@@ -1,32 +1,28 @@
-var fitbit = require('./btle.js');
+var heartrate = require('./heartrate-btle.js');
 
 function Plugin(messenger, options, api) {
-    this.name = require('./package.json').name;
+    var self = this;
 
-    this.messenger = messenger;
-    this.options = options;
+    self.name = require('./package.json').name;
 
-    this.api = api; // Mobile Specific
+    self.messenger = messenger;
+    self.options = options;
 
-    fitbit.init();
+    self.api = api; // Mobile Specific
 
-    return this;
-}
+    heartrate.init();
 
-var optionsSchema = {
-    type: 'object',
-    properties: {
-        device : {
-            type: 'string',
-            required: true
-        }
-    }
-};
-
-var getDefaultOptions = function(callback){
-    callback(null, {
-        device : '' // TODO
+    $(document).on('heart-rate', function(e, hr){
+        self.messenger.data({
+            heartRate : hr
+        });
+        self.api.logActivity({
+            type: self.name,
+            html: 'Logged Heartbeat : ' + hr
+        });
     });
+
+    return self;
 }
 
 // Mobile Specific
@@ -55,15 +51,9 @@ Plugin.prototype.onInstall = function () {
 };
 
 Plugin.prototype.destroy = function () {
-    //clean up
-    this.api.logActivity({
-        type: this.name,
-        html: 'Destroying plugin'
-    });
-
+    heartrate.destroy();
 };
 
 module.exports = {
-    Plugin: Plugin, // Required
-    optionsSchema: optionsSchema, // Optional
+    Plugin: Plugin
 };
