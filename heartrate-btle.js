@@ -1,3 +1,5 @@
+var bluetoothle = window.plugins && window.plugins.bluetoothle ? window.plugins.bluetoothle : null;
+
 var config = {};
 
 config.addressKey = 'heartbeat_address';
@@ -492,9 +494,7 @@ function closeError(obj) {
 module.exports = {
 
     config : function(newConfig){
-
-        config  = _.extend(config, newConfig);
-
+        if(newConfig) config  = _.extend(config, newConfig);
     },
     
     init : function () {
