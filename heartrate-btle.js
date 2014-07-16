@@ -4,6 +4,7 @@ var config = {};
 config.addressKey = 'heartbeat_address';
 
 config.serviceUuid = '180d';
+config.serviceUuids = [config.serviceUuid];
 config.measurementCharacteristicUuid = '2a37';
 config.clientCharacteristicConfigDescriptorUuid = '2902';
 config.batteryServiceUuid = '180f';
@@ -28,7 +29,7 @@ function initializeSuccess(obj) {
         var address = window.localStorage.getItem(config.addressKey);
         if (address == null) {
             logIt('Bluetooth initialized successfully, starting scan for heart rate devices.');
-            var paramsObj = {'serviceUuids': [config.serviceUuid]};
+            var paramsObj = {'serviceUuids': obj.serviceUuids};
             btle.startScan(startScanSuccess, startScanError, paramsObj);
         }
         else {
