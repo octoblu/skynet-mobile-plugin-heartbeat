@@ -9,6 +9,8 @@ config.measurementCharacteristicUuid = '2a37';
 config.clientCharacteristicConfigDescriptorUuid = '2902';
 config.batteryServiceUuid = '180f';
 config.batteryLevelCharacteristicUuid = '2a19';
+config.batteryServiceUuids = [config.batteryServiceUuid];
+
 
 config.debug = true;
 
@@ -260,7 +262,7 @@ function characteristicsHeartError(obj) {
 function descriptorsHeartSuccess(obj) {
     if (obj.status == 'discoveredDescriptors') {
         logIt('Discovered heart descriptors, now discovering battery service');
-        var paramsObj = {'serviceUuids': [config.batteryServiceUuid]};
+        var paramsObj = {'serviceUuids': config.batteryServiceUuids};
         btle.services(servicesBatterySuccess, servicesBatteryError, paramsObj);
     }
     else {
@@ -276,7 +278,7 @@ function descriptorsHeartError(obj) {
 
 function servicesBatterySuccess(obj) {
     if (obj.status == 'discoveredServices') {
-        var serviceUuids = config.serviceUuids;
+        var serviceUuids = config.batteryServiceUuids;
         if(serviceUuids) {
             for (var i = 0; i < serviceUuids.length; i++) {
                 var serviceUuid = serviceUuids[i];
