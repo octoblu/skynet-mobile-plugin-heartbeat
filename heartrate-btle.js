@@ -122,7 +122,9 @@ function connectSuccess(obj) {
 function connectError(obj) {
     logIt('Connect error: ' + obj.error + ' - ' + obj.message);
     clearConnectTimeout();
-    reconnect();
+    if(obj.error === 'connect'){
+        reconnect();
+    }
 }
 
 function connectTimeout() {
