@@ -58,8 +58,8 @@ function startScanSuccess(obj) {
         connectDevice(obj.address);
     }
     else if (obj.status == 'scanStarted') {
-        logIt('Scan was started successfully, stopping in 10');
-        scanTimer = setTimeout(scanTimeout, 10000);
+        logIt('Scan was started successfully, stopping in 20 seconds');
+        scanTimer = setTimeout(scanTimeout, 20000);
     }
     else {
         logIt('Unexpected start scan status: ' + obj.status);
@@ -96,10 +96,10 @@ function stopScanError(obj) {
 }
 
 function connectDevice(address) {
-    logIt('Begining connection to: ' + address + ' with 5 second timeout');
+    logIt('Begining connection to: ' + address + ' with ' + config.timeout + ' second timeout');
     var paramsObj = {'address': address};
     btle.connect(connectSuccess, connectError, paramsObj);
-    connectTimer = setTimeout(connectTimeout, 5000);
+    connectTimer = setTimeout(connectTimeout, config.timeout);
 }
 
 function connectSuccess(obj) {
@@ -122,6 +122,7 @@ function connectSuccess(obj) {
 function connectError(obj) {
     logIt('Connect error: ' + obj.error + ' - ' + obj.message);
     clearConnectTimeout();
+    reconnect();
 }
 
 function connectTimeout() {
@@ -143,7 +144,7 @@ function tempDisconnectDevice() {
 function tempDisconnectSuccess(obj) {
     if (obj.status == 'disconnected') {
         logIt('Temp disconnect device and reconnecting in 1 second. Instantly reconnecting can cause issues');
-        setTimeout(reconnect, 1000);
+        setTimeout(reconnect, 3000);
     }
     else if (obj.status == 'disconnecting') {
         logIt('Temp disconnecting device');
@@ -359,7 +360,7 @@ function readSuccess(obj) {
         var bytes = btle.encodedStringToBytes(obj.value);
         logIt('Battery level: ' + bytes[0]);
 
-        logIt('Subscribing to heart rate for 5 seconds');
+        logIt('Subscribing to heart rate for ' + config.timeout + ' seconds');
         var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
         btle.subscribe(subscribeSuccess, subscribeError, paramsObj);
         setTimeout(unsubscribeDevice, config.timeout);
