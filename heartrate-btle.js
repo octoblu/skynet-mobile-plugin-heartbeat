@@ -168,7 +168,7 @@ function reconnectSuccess(obj) {
 
         if (window.device.platform == iOSPlatform) {
             logIt('Discovering heart rate service');
-            var paramsObj = {'serviceUuids': [config.serviceUuid]};
+            var paramsObj = {'serviceUuids': config.serviceUuids};
             btle.services(servicesHeartSuccess, servicesHeartError, paramsObj);
         }
         else if (window.device.platform == androidPlatform) {
