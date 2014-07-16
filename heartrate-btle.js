@@ -11,6 +11,7 @@ config.batteryServiceUuid = '180f';
 config.batteryLevelCharacteristicUuid = '2a19';
 config.batteryServiceUuids = [config.batteryServiceUuid];
 
+config.timeout = 60 * 60 * 1000;
 
 config.debug = true;
 
@@ -361,7 +362,7 @@ function readSuccess(obj) {
         logIt('Subscribing to heart rate for 5 seconds');
         var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
         btle.subscribe(subscribeSuccess, subscribeError, paramsObj);
-        setTimeout(unsubscribeDevice, 5000);
+        setTimeout(unsubscribeDevice, config.timeout);
     }
     else {
         logIt('Unexpected read status: ' + obj.status);
