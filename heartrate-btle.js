@@ -15,10 +15,12 @@ config.timeout = 60 * 60 * 1000;
 
 config.debug = true;
 
-var logIt = function(msg){
+var consoleLog = function(msg){
     if(!config.debug) return;
     console.log(msg);
 };
+
+var logIt = function(){};
 
 var scanTimer = null;
 var connectTimer = null;
@@ -31,7 +33,7 @@ function initializeSuccess(obj) {
     if (obj.status == 'initialized') {
         var address = window.localStorage.getItem(config.addressKey);
         if (address == null) {
-            logIt('Bluetooth initialized successfully, starting scan for heart rate devices.');
+            consoleLog('Bluetooth initialized successfully, starting scan for heart rate devices.');
             var paramsObj = {'serviceUuids': obj.serviceUuids};
             btle.startScan(startScanSuccess, startScanError, paramsObj);
         }
@@ -40,7 +42,7 @@ function initializeSuccess(obj) {
         }
     }
     else {
-        logIt('Unexpected initialize status: ' + obj.status);
+        consoleLog('Unexpected initialize status: ' + obj.status);
     }
 }
 
@@ -50,7 +52,7 @@ function initializeError(obj) {
 
 function startScanSuccess(obj) {
     if (obj.status == 'scanResult') {
-        logIt('Stopping scan..');
+        consoleLog('Stopping scan..');
         btle.stopScan(stopScanSuccess, stopScanError);
         clearScanTimeout();
 
@@ -58,25 +60,25 @@ function startScanSuccess(obj) {
         connectDevice(obj.address);
     }
     else if (obj.status == 'scanStarted') {
-        logIt('Scan was started successfully, stopping in 20 seconds');
+        consoleLog('Scan was started successfully, stopping in 20 seconds');
         scanTimer = setTimeout(scanTimeout, 20000);
     }
     else {
-        logIt('Unexpected start scan status: ' + obj.status);
+        consoleLog('Unexpected start scan status: ' + obj.status);
     }
 }
 
 function startScanError(obj) {
-    logIt('Start scan error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Start scan error: ' + obj.error + ' - ' + obj.message);
 }
 
 function scanTimeout() {
-    logIt('Scanning time out, stopping');
+    consoleLog('Scanning time out, stopping');
     btle.stopScan(stopScanSuccess, stopScanError);
 }
 
 function clearScanTimeout() {
-    logIt('Clearing scanning timeout');
+    consoleLog('Clearing scanning timeout');
     if (scanTimer != null) {
         clearTimeout(scanTimer);
     }
@@ -84,19 +86,19 @@ function clearScanTimeout() {
 
 function stopScanSuccess(obj) {
     if (obj.status == 'scanStopped') {
-        logIt('Scan was stopped successfully');
+        consoleLog('Scan was stopped successfully');
     }
     else {
-        logIt('Unexpected stop scan status: ' + obj.status);
+        consoleLog('Unexpected stop scan status: ' + obj.status);
     }
 }
 
 function stopScanError(obj) {
-    logIt('Stop scan error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Stop scan error: ' + obj.error + ' - ' + obj.message);
 }
 
 function connectDevice(address) {
-    logIt('Begining connection to: ' + address + ' with ' + config.timeout + ' second timeout');
+    consoleLog('Begining connection to: ' + address + ' with ' + config.timeout + ' second timeout');
     var paramsObj = {'address': address};
     btle.connect(connectSuccess, connectError, paramsObj);
     connectTimer = setTimeout(connectTimeout, config.timeout);
@@ -104,23 +106,23 @@ function connectDevice(address) {
 
 function connectSuccess(obj) {
     if (obj.status == 'connected') {
-        logIt('Connected to : ' + obj.name + ' - ' + obj.address);
+        logIt(null, 'Connected to : ' + obj.name + ' - ' + obj.address);
 
         clearConnectTimeout();
 
         tempDisconnectDevice();
     }
     else if (obj.status == 'connecting') {
-        logIt('Connecting to : ' + obj.name + ' - ' + obj.address);
+        consoleLog('Connecting to : ' + obj.name + ' - ' + obj.address);
     }
     else {
-        logIt('Unexpected connect status: ' + obj.status);
+        consoleLog('Unexpected connect status: ' + obj.status);
         clearConnectTimeout();
     }
 }
 
 function connectError(obj) {
-    logIt('Connect error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Connect error: ' + obj.error + ' - ' + obj.message);
     clearConnectTimeout();
     if(obj.error === 'connect'){
         reconnect();
@@ -128,80 +130,80 @@ function connectError(obj) {
 }
 
 function connectTimeout() {
-    logIt('Connection timed out');
+    consoleLog('Connection timed out');
 }
 
 function clearConnectTimeout() {
-    logIt('Clearing connect timeout');
+    consoleLog('Clearing connect timeout');
     if (connectTimer != null) {
         clearTimeout(connectTimer);
     }
 }
 
 function tempDisconnectDevice() {
-    logIt('Disconnecting from device to test reconnect');
+    consoleLog('Disconnecting from device to test reconnect');
     btle.disconnect(tempDisconnectSuccess, tempDisconnectError);
 }
 
 function tempDisconnectSuccess(obj) {
     if (obj.status == 'disconnected') {
-        logIt('Temp disconnect device and reconnecting in 1 second. Instantly reconnecting can cause issues');
+        consoleLog('Temp disconnect device and reconnecting in 1 second. Instantly reconnecting can cause issues');
         setTimeout(reconnect, 3000);
     }
     else if (obj.status == 'disconnecting') {
-        logIt('Temp disconnecting device');
+        consoleLog('Temp disconnecting device');
     }
     else {
-        logIt('Unexpected temp disconnect status: ' + obj.status);
+        consoleLog('Unexpected temp disconnect status: ' + obj.status);
     }
 }
 
 function tempDisconnectError(obj) {
-    logIt('Temp disconnect error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Temp disconnect error: ' + obj.error + ' - ' + obj.message);
 }
 
 function reconnect() {
-    logIt('Reconnecting with 5 second timeout');
+    consoleLog('Reconnecting with 5 second timeout');
     btle.reconnect(reconnectSuccess, reconnectError);
     reconnectTimer = setTimeout(reconnectTimeout, 5000);
 }
 
 function reconnectSuccess(obj) {
     if (obj.status == 'connected') {
-        logIt('Reconnected to : ' + obj.name + ' - ' + obj.address);
+        logIt(null, 'Reconnected to : ' + obj.name + ' - ' + obj.address);
 
         clearReconnectTimeout();
 
         if (window.device.platform == iOSPlatform) {
-            logIt('Discovering heart rate service');
+            logIt(null, 'Discovering heart rate service');
             var paramsObj = {'serviceUuids': config.serviceUuids};
             btle.services(servicesHeartSuccess, servicesHeartError, paramsObj);
         }
         else if (window.device.platform == androidPlatform) {
-            logIt('Beginning discovery');
+            consoleLog('Beginning discovery');
             btle.discover(discoverSuccess, discoverError);
         }
     }
     else if (obj.status == 'connecting') {
-        logIt('Reconnecting to : ' + obj.name + ' - ' + obj.address);
+        consoleLog('Reconnecting to : ' + obj.name + ' - ' + obj.address);
     }
     else {
-        logIt('Unexpected reconnect status: ' + obj.status);
+        consoleLog('Unexpected reconnect status: ' + obj.status);
         disconnectDevice();
     }
 }
 
 function reconnectError(obj) {
-    logIt('Reconnect error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Reconnect error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
 function reconnectTimeout() {
-    logIt('Reconnection timed out');
+    consoleLog('Reconnection timed out');
 }
 
 function clearReconnectTimeout() {
-    logIt('Clearing reconnect timeout');
+    consoleLog('Clearing reconnect timeout');
     if (reconnectTimer != null) {
         clearTimeout(reconnectTimer);
     }
@@ -215,7 +217,7 @@ function servicesHeartSuccess(obj) {
                 var serviceUuid = serviceUuids[i];
 
                 if (serviceUuid == config.serviceUuid) {
-                    logIt('Finding heart rate characteristics');
+                    consoleLog('Finding heart rate characteristics');
                     var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuids': [config.measurementCharacteristicUuid]};
                     btle.characteristics(characteristicsHeartSuccess, characteristicsHeartError, paramsObj);
                     return;
@@ -240,7 +242,7 @@ function characteristicsHeartSuccess(obj) {
         var characteristicUuids = obj.characteristicUuids;
         if(characteristicUuids) {
             for (var i = 0; i < characteristicUuids.length; i++) {
-                logIt('Heart characteristics found, now discovering descriptor');
+                consoleLog('Heart characteristics found, now discovering descriptor');
                 var characteristicUuid = characteristicUuids[i];
 
                 if (characteristicUuid == config.measurementCharacteristicUuid) {
@@ -250,33 +252,33 @@ function characteristicsHeartSuccess(obj) {
                 }
             }
         }
-        logIt('Error: Heart rate measurement characteristic not found.');
+        consoleLog('Error: Heart rate measurement characteristic not found.');
     }
     else {
-        logIt('Unexpected characteristics heart status: ' + obj.status);
+        consoleLog('Unexpected characteristics heart status: ' + obj.status);
     }
     disconnectDevice();
 }
 
 function characteristicsHeartError(obj) {
-    logIt('Characteristics heart error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Characteristics heart error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
 function descriptorsHeartSuccess(obj) {
     if (obj.status == 'discoveredDescriptors') {
-        logIt('Discovered heart descriptors, now discovering battery service');
+        consoleLog('Discovered heart descriptors, now discovering battery service');
         var paramsObj = {'serviceUuids': config.batteryServiceUuids};
         btle.services(servicesBatterySuccess, servicesBatteryError, paramsObj);
     }
     else {
-        logIt('Unexpected descriptors heart status: ' + obj.status);
+        consoleLog('Unexpected descriptors heart status: ' + obj.status);
         disconnectDevice();
     }
 }
 
 function descriptorsHeartError(obj) {
-    logIt('Descriptors heart error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Descriptors heart error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
@@ -288,23 +290,23 @@ function servicesBatterySuccess(obj) {
                 var serviceUuid = serviceUuids[i];
 
                 if (serviceUuid == config.batteryServiceUuid) {
-                    logIt('Found battery service, now finding characteristic');
+                    consoleLog('Found battery service, now finding characteristic');
                     var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuids': [config.batteryLevelCharacteristicUuid]};
                     btle.characteristics(characteristicsBatterySuccess, characteristicsBatteryError, paramsObj);
                     return;
                 }
             }
         }
-        logIt('Error: battery service not found');
+        consoleLog('Error: battery service not found');
     }
     else {
-        logIt('Unexpected services battery status: ' + obj.status);
+        consoleLog('Unexpected services battery status: ' + obj.status);
     }
     disconnectDevice();
 }
 
 function servicesBatteryError(obj) {
-    logIt('Services battery error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Services battery error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
@@ -321,38 +323,38 @@ function characteristicsBatterySuccess(obj) {
                 }
             }
         }
-        logIt('Error: Battery characteristic not found.');
+        consoleLog('Error: Battery characteristic not found.');
     }
     else {
-        logIt('Unexpected characteristics battery status: ' + obj.status);
+        consoleLog('Unexpected characteristics battery status: ' + obj.status);
     }
     disconnectDevice();
 }
 
 function characteristicsBatteryError(obj) {
-    logIt('Characteristics battery error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Characteristics battery error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
 function discoverSuccess(obj) {
     if (obj.status == 'discovered') {
-        logIt('Discovery completed');
+        consoleLog('Discovery completed');
 
         readBatteryLevel();
     }
     else {
-        logIt('Unexpected discover status: ' + obj.status);
+        consoleLog('Unexpected discover status: ' + obj.status);
         disconnectDevice();
     }
 }
 
 function discoverError(obj) {
-    logIt('Discover error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Discover error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
 function readBatteryLevel() {
-    logIt('Reading battery level');
+    consoleLog('Reading battery level');
     var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuid': config.batteryLevelCharacteristicUuid};
     btle.read(readSuccess, readError, paramsObj);
 }
@@ -360,15 +362,15 @@ function readBatteryLevel() {
 function readSuccess(obj) {
     if (obj.status == 'read') {
         var bytes = btle.encodedStringToBytes(obj.value);
-        logIt('Battery level: ' + bytes[0]);
+        logIt(null, 'Battery level: ' + bytes[0]);
 
-        logIt('Subscribing to heart rate for ' + config.timeout + ' seconds');
+        consoleLog('Subscribing to heart rate for ' + config.timeout + ' seconds');
         var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
         btle.subscribe(subscribeSuccess, subscribeError, paramsObj);
         setTimeout(unsubscribeDevice, config.timeout);
     }
     else {
-        logIt('Unexpected read status: ' + obj.status);
+        consoleLog('Unexpected read status: ' + obj.status);
         disconnectDevice();
     }
 }
@@ -380,14 +382,14 @@ function readError(obj) {
 
 function subscribeSuccess(obj) {
     if (obj.status == 'subscribedResult') {
-        logIt('Subscription data received');
+        consoleLog('Subscription data received');
 
         //Parse array of int32 into uint8
         var bytes = btle.encodedStringToBytes(obj.value);
 
         //Check for data
         if (bytes.length == 0) {
-            logIt('Subscription result had zero length data');
+            consoleLog('Subscription result had zero length data');
             return;
         }
 
@@ -406,15 +408,15 @@ function subscribeSuccess(obj) {
             var u8 = new Uint8Array(u8bytes)[0];
             hr = u8;
         }
-        logIt('Heart Rate: ' + hr);
+        consoleLog('Heart Rate: ' + hr);
 
         $(document).trigger('heart-rate', hr);
     }
     else if (obj.status == 'subscribed') {
-        logIt('Subscription started');
+        consoleLog('Subscription started');
     }
     else {
-        logIt('Unexpected subscribe status: ' + obj.status);
+        consoleLog('Unexpected subscribe status: ' + obj.status);
         disconnectDevice();
     }
 }
@@ -425,27 +427,27 @@ function subscribeError(msg) {
 }
 
 function unsubscribeDevice() {
-    logIt('Unsubscribing heart service');
+    consoleLog('Unsubscribing heart service');
     var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
     btle.unsubscribe(unsubscribeSuccess, unsubscribeError, paramsObj);
 }
 
 function unsubscribeSuccess(obj) {
     if (obj.status == 'unsubscribed') {
-        logIt('Unsubscribed device');
+        consoleLog('Unsubscribed device');
 
-        logIt('Reading client configuration descriptor');
+        consoleLog('Reading client configuration descriptor');
         var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid, 'descriptorUuid': config.clientCharacteristicConfigDescriptorUuid};
         btle.readDescriptor(readDescriptorSuccess, readDescriptorError, paramsObj);
     }
     else {
-        logIt('Unexpected unsubscribe status: ' + obj.status);
+        consoleLog('Unexpected unsubscribe status: ' + obj.status);
         disconnectDevice();
     }
 }
 
 function unsubscribeError(obj) {
-    logIt('Unsubscribe error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Unsubscribe error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
@@ -453,17 +455,17 @@ function readDescriptorSuccess(obj) {
     if (obj.status == 'readDescriptor') {
         var bytes = btle.encodedStringToBytes(obj.value);
         var u16Bytes = new Uint16Array(bytes.buffer);
-        logIt('Read descriptor value: ' + u16Bytes[0]);
+        consoleLog('Read descriptor value: ' + u16Bytes[0]);
         disconnectDevice();
     }
     else {
-        logIt('Unexpected read descriptor status: ' + obj.status);
+        consoleLog('Unexpected read descriptor status: ' + obj.status);
         disconnectDevice();
     }
 }
 
 function readDescriptorError(obj) {
-    logIt('Read Descriptor error: ' + obj.error + ' - ' + obj.message);
+    consoleLog('Read Descriptor error: ' + obj.error + ' - ' + obj.message);
     disconnectDevice();
 }
 
@@ -473,14 +475,14 @@ function disconnectDevice() {
 
 function disconnectSuccess(obj) {
     if (obj.status == 'disconnected') {
-        logIt('Disconnect device');
+        logIt(null, 'Disconnect device');
         closeDevice();
     }
     else if (obj.status == 'disconnecting') {
-        logIt('Disconnecting device');
+        consoleLog('Disconnecting device');
     }
     else {
-        logIt('Unexpected disconnect status: ' + obj.status);
+        consoleLog('Unexpected disconnect status: ' + obj.status);
     }
 }
 
@@ -494,10 +496,10 @@ function closeDevice() {
 
 function closeSuccess(obj) {
     if (obj.status == 'closed') {
-        logIt('Closed device');
+        consoleLog('Closed device');
     }
     else {
-        logIt('Unexpected close status: ' + obj.status);
+        consoleLog('Unexpected close status: ' + obj.status);
     }
 }
 
@@ -510,14 +512,14 @@ module.exports = {
     config : function(newConfig, api){
         if(newConfig) config  = _.extend(config, newConfig);
 
-        if(api.logIt) logIt = api.logIt;
+        if(api.logIt) logIt = api.consoleLog;
 
     },
     
     init : function () {
 
         if(!btle){
-            return logIt('BTLE Plugin not found :( ');
+            return consoleLog('BTLE Plugin not found :( ');
         }
 
         btle.initialize(initializeSuccess, initializeError);
