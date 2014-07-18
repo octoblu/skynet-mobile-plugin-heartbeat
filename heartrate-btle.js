@@ -512,7 +512,7 @@ module.exports = {
     config : function(newConfig, api){
         if(newConfig) config  = _.extend(config, newConfig);
 
-        if(api.logIt) logIt = api.consoleLog;
+        if(api.logIt) logIt = api.logIt;
 
     },
     
