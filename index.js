@@ -1,14 +1,34 @@
 var heartrate = require('./heartrate-btle.js');
 
-function Plugin(messenger, options, api) {
+function Plugin(messenger, options, api, pluginName) {
     var self = this;
 
-    self.name = require('./package.json').name;
+    self.name = pluginName;
 
     self.messenger = messenger;
     self.options = options;
 
     self.api = api; // Mobile Specific
+
+    var logIt = function(err, msg){
+        var obj = {
+            type: self.name
+        };
+        if(err){
+            obj.error = err;
+        }
+        if(msg){
+            obj.html = msg;
+        }
+        self.api.logActivity(obj);
+    };
+
+    if(!options.addressKey)
+        options.addressKey = 'heart_' + pluginName;
+
+    heartrate.config(options, {
+        logIt : logIt
+    });
 
     heartrate.init();
 
@@ -16,14 +36,27 @@ function Plugin(messenger, options, api) {
         self.messenger.data({
             heartRate : hr
         });
-        self.api.logActivity({
-            type: self.name,
-            html: 'Logged Heartbeat : ' + hr
-        });
+        logIt(null, 'Logged Heartbeat : ' + hr);
     });
 
     return self;
 }
+
+function getDefaultOptions(cb){
+    cb(null, {
+        timeout : 60 * 60 * 1000
+    });
+}
+
+var optionsSchema = {
+    type: 'object',
+    properties: {
+        timeout: {
+            type: 'integer',
+            required: true
+        }
+    }
+};
 
 // Mobile Specific
 Plugin.prototype.onEnable = function () {
@@ -55,5 +88,7 @@ Plugin.prototype.destroy = function () {
 };
 
 module.exports = {
-    Plugin: Plugin
+    Plugin: Plugin,
+    optionsSchema : optionsSchema,
+    getDefaultOptions : getDefaultOptions
 };

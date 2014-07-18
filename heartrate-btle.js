@@ -15,10 +15,10 @@ config.timeout = 60 * 60 * 1000;
 
 config.debug = true;
 
-function logIt(msg){
+var logIt = function(msg){
     if(!config.debug) return;
     console.log(msg);
-}
+};
 
 var scanTimer = null;
 var connectTimer = null;
@@ -507,8 +507,11 @@ function closeError(obj) {
 
 module.exports = {
 
-    config : function(newConfig){
+    config : function(newConfig, api){
         if(newConfig) config  = _.extend(config, newConfig);
+
+        if(api.logIt) logIt = api.logIt;
+
     },
     
     init : function () {
