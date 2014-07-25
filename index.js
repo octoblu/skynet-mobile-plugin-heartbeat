@@ -1,9 +1,9 @@
 var heartrate = require('./heartrate-btle.js');
 
-function Plugin(messenger, options, api, pluginName) {
+function Plugin(messenger, options, api, deviceName) {
     var self = this;
 
-    self.name = pluginName;
+    self.name = deviceName;
 
     self.messenger = messenger;
     self.options = options;
@@ -24,7 +24,7 @@ function Plugin(messenger, options, api, pluginName) {
     };
 
     if(!options.addressKey)
-        options.addressKey = 'heart_' + pluginName;
+        options.addressKey = 'heart_' + self.name;
 
     heartrate.config(options, {
         logIt : logIt
@@ -34,6 +34,8 @@ function Plugin(messenger, options, api, pluginName) {
 
     $(document).on('heart-rate', function(e, hr){
         self.messenger.data({
+            device : self.name,
+            type : 'heartRate',
             heartRate : hr
         });
         logIt(null, 'Logged Heartbeat : ' + hr);
