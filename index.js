@@ -3,7 +3,12 @@ var heartrate = require('./heartrate-btle.js');
 function Plugin(messenger, options, api, deviceName) {
     var self = this;
 
-    self.name = deviceName;
+    if(typeof deviceName === 'string') {
+        self.name = deviceName;
+    }else if(deviceName){
+        self.name = deviceName.name;
+        self.uuid = deviceName.uuid;
+    }
 
     self.messenger = messenger;
     self.options = options;
@@ -24,7 +29,7 @@ function Plugin(messenger, options, api, deviceName) {
     };
 
     if(!options.addressKey)
-        options.addressKey = 'heart_' + self.name;
+        options.addressKey = 'heart_' + self.uuid;
 
     heartrate.config(options, {
         logIt : logIt
