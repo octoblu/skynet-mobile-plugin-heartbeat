@@ -40,7 +40,7 @@ var androidPlatform = 'Android';
 
 function initializeSuccess(obj) {
     consoleLog('Initialized: ', obj);
-    if (obj.status === 'initialized') {
+    if (obj.status === 'enabled') {
         var address = window.mobibluStorage.getItem(config.addressKey);
         if (_.isEmpty(address)) {
             logIt('Bluetooth initialized successfully, starting scan for heart rate devices.');

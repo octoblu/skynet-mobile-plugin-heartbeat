@@ -4,7 +4,9 @@ var heartrate = require('./heartrate-btle.js');
 
 function Plugin(messenger, options, api, deviceName) {
     var self = this;
-
+    if(!options){
+        options = {};
+    }
     if(typeof deviceName === 'string') {
         self.name = deviceName;
     }else if(deviceName){
