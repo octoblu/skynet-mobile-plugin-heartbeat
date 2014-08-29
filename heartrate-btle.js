@@ -17,19 +17,19 @@ config.timeout = 60 * 60 * 1000;
 
 config.debug = true;
 
-var consoleLog = function(msg, obj){
+var consoleLog = function(msg, obj) {
     // Is Debug
-    if(!config.debug) return;
+    if (!config.debug) return;
     // Is Undefined
-    if(_.isUndefined(obj)) obj = '';
+    if (_.isUndefined(obj)) obj = '';
     // Is not string
-    if(!_.isString(obj)){
+    if (!_.isString(obj)) {
         obj = JSON.stringify(obj);
     }
     console.log(msg + obj);
 };
 
-var logIt = function(){};
+var logIt = function() {};
 
 var scanTimer = null;
 var connectTimer = null;
@@ -38,20 +38,25 @@ var reconnectTimer = null;
 var iOSPlatform = 'iOS';
 var androidPlatform = 'Android';
 
+function startScan() {
+    var address = window.mobibluStorage.getItem(config.addressKey);
+    if (_.isEmpty(address)) {
+        consoleLog('Bluetooth initialized successfully, starting scan for heart rate devices.');
+        var paramsObj = {
+            'serviceUuids': config.serviceUuids
+        };
+        btle.startScan(startScanSuccess, startScanError, paramsObj);
+    } else {
+        connectDevice(address);
+    }
+
+}
+
 function initializeSuccess(obj) {
     consoleLog('Initialized: ', obj);
     if (obj.status === 'enabled') {
-        var address = window.mobibluStorage.getItem(config.addressKey);
-        if (_.isEmpty(address)) {
-            logIt('Bluetooth initialized successfully, starting scan for heart rate devices.');
-            var paramsObj = {'serviceUuids': obj.serviceUuids};
-            btle.startScan(startScanSuccess, startScanError, paramsObj);
-        }
-        else {
-            connectDevice(address);
-        }
-    }
-    else {
+        startScan();
+    } else {
         consoleLog('Unexpected initialize status: ' + obj.status);
     }
 }
@@ -68,12 +73,10 @@ function startScanSuccess(obj) {
 
         window.mobibluStorage.setItem(config.addressKey, obj.address);
         connectDevice(obj.address);
-    }
-    else if (obj.status === 'scanStarted') {
+    } else if (obj.status === 'scanStarted') {
         consoleLog('Scan was started successfully, stopping in 20 seconds');
         scanTimer = setTimeout(scanTimeout, 20000);
-    }
-    else {
+    } else {
         consoleLog('Unexpected start scan status: ' + obj.status);
     }
 }
@@ -97,8 +100,7 @@ function clearScanTimeout() {
 function stopScanSuccess(obj) {
     if (obj.status == 'scanStopped') {
         consoleLog('Scan was stopped successfully');
-    }
-    else {
+    } else {
         consoleLog('Unexpected stop scan status: ' + obj.status);
     }
 }
@@ -109,7 +111,9 @@ function stopScanError(obj) {
 
 function connectDevice(address) {
     logIt('Started connection to: ' + address + ' with ' + config.timeout + ' second timeout');
-    var paramsObj = {'address': address};
+    var paramsObj = {
+        'address': address
+    };
     btle.connect(connectSuccess, connectError, paramsObj);
     connectTimer = setTimeout(connectTimeout, config.timeout);
 }
@@ -121,11 +125,9 @@ function connectSuccess(obj) {
         clearConnectTimeout();
 
         tempDisconnectDevice();
-    }
-    else if (obj.status === 'connecting') {
+    } else if (obj.status === 'connecting') {
         consoleLog('Connecting to : ' + obj.name + ' - ' + obj.address);
-    }
-    else {
+    } else {
         consoleLog('Unexpected connect status: ' + obj.status);
         clearConnectTimeout();
     }
@@ -134,7 +136,7 @@ function connectSuccess(obj) {
 function connectError(obj) {
     consoleLog('Connect error: ' + obj.error + ' - ' + obj.message);
     clearConnectTimeout();
-    if(obj.error === 'connect'){
+    if (obj.error === 'connect') {
         reconnect();
     }
 }
@@ -159,11 +161,9 @@ function tempDisconnectSuccess(obj) {
     if (obj.status === 'disconnected') {
         consoleLog('Temp disconnect device and reconnecting in 1 second. Instantly reconnecting can cause issues');
         setTimeout(reconnect, 3000);
-    }
-    else if (obj.status === 'disconnecting') {
+    } else if (obj.status === 'disconnecting') {
         consoleLog('Temp disconnecting device');
-    }
-    else {
+    } else {
         consoleLog('Unexpected temp disconnect status: ' + obj.status);
     }
 }
@@ -186,18 +186,17 @@ function reconnectSuccess(obj) {
 
         if (window.device.platform === iOSPlatform) {
             logIt(null, 'Discovering heart rate service');
-            var paramsObj = {'serviceUuids': config.serviceUuids};
+            var paramsObj = {
+                'serviceUuids': config.serviceUuids
+            };
             btle.services(servicesHeartSuccess, servicesHeartError, paramsObj);
-        }
-        else if (window.device.platform === androidPlatform) {
+        } else if (window.device.platform === androidPlatform) {
             consoleLog('Beginning discovery');
             btle.discover(discoverSuccess, discoverError);
         }
-    }
-    else if (obj.status === 'connecting') {
+    } else if (obj.status === 'connecting') {
         consoleLog('Reconnecting to : ' + obj.name + ' - ' + obj.address);
-    }
-    else {
+    } else {
         consoleLog('Unexpected reconnect status: ' + obj.status);
         disconnectDevice();
     }
@@ -222,21 +221,23 @@ function clearReconnectTimeout() {
 function servicesHeartSuccess(obj) {
     if (obj.status === 'discoveredServices') {
         var serviceUuids = config.serviceUuids;
-        if(serviceUuids) {
+        if (serviceUuids) {
             for (var i = 0; i < serviceUuids.length; i++) {
                 var serviceUuid = serviceUuids[i];
 
                 if (serviceUuid === config.serviceUuid) {
                     consoleLog('Finding heart rate characteristics');
-                    var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuids': [config.measurementCharacteristicUuid]};
+                    var paramsObj = {
+                        'serviceUuid': config.serviceUuid,
+                        'characteristicUuids': [config.measurementCharacteristicUuid]
+                    };
                     btle.characteristics(characteristicsHeartSuccess, characteristicsHeartError, paramsObj);
                     return;
                 }
             }
         }
         logIt('Error: heart rate service not found');
-    }
-    else {
+    } else {
         logIt('Unexpected services heart status: ' + obj.status);
     }
     disconnectDevice();
@@ -250,21 +251,23 @@ function servicesHeartError(obj) {
 function characteristicsHeartSuccess(obj) {
     if (obj.status === 'discoveredCharacteristics') {
         var characteristicUuids = obj.characteristicUuids;
-        if(characteristicUuids) {
+        if (characteristicUuids) {
             for (var i = 0; i < characteristicUuids.length; i++) {
                 consoleLog('Heart characteristics found, now discovering descriptor');
                 var characteristicUuid = characteristicUuids[i];
 
                 if (characteristicUuid === config.measurementCharacteristicUuid) {
-                    var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
+                    var paramsObj = {
+                        'serviceUuid': config.serviceUuid,
+                        'characteristicUuid': config.measurementCharacteristicUuid
+                    };
                     btle.descriptors(descriptorsHeartSuccess, descriptorsHeartError, paramsObj);
                     return;
                 }
             }
         }
         consoleLog('Error: Heart rate measurement characteristic not found.');
-    }
-    else {
+    } else {
         consoleLog('Unexpected characteristics heart status: ' + obj.status);
     }
     disconnectDevice();
@@ -278,10 +281,11 @@ function characteristicsHeartError(obj) {
 function descriptorsHeartSuccess(obj) {
     if (obj.status === 'discoveredDescriptors') {
         consoleLog('Discovered heart descriptors, now discovering battery service');
-        var paramsObj = {'serviceUuids': config.batteryServiceUuids};
+        var paramsObj = {
+            'serviceUuids': config.batteryServiceUuids
+        };
         btle.services(servicesBatterySuccess, servicesBatteryError, paramsObj);
-    }
-    else {
+    } else {
         consoleLog('Unexpected descriptors heart status: ' + obj.status);
         disconnectDevice();
     }
@@ -295,21 +299,23 @@ function descriptorsHeartError(obj) {
 function servicesBatterySuccess(obj) {
     if (obj.status === 'discoveredServices') {
         var serviceUuids = config.batteryServiceUuids;
-        if(serviceUuids) {
+        if (serviceUuids) {
             for (var i = 0; i < serviceUuids.length; i++) {
                 var serviceUuid = serviceUuids[i];
 
                 if (serviceUuid === config.batteryServiceUuid) {
                     consoleLog('Found battery service, now finding characteristic');
-                    var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuids': [config.batteryLevelCharacteristicUuid]};
+                    var paramsObj = {
+                        'serviceUuid': config.batteryServiceUuid,
+                        'characteristicUuids': [config.batteryLevelCharacteristicUuid]
+                    };
                     btle.characteristics(characteristicsBatterySuccess, characteristicsBatteryError, paramsObj);
                     return;
                 }
             }
         }
         consoleLog('Error: battery service not found');
-    }
-    else {
+    } else {
         consoleLog('Unexpected services battery status: ' + obj.status);
     }
     disconnectDevice();
@@ -323,7 +329,7 @@ function servicesBatteryError(obj) {
 function characteristicsBatterySuccess(obj) {
     if (obj.status === 'discoveredCharacteristics') {
         var characteristicUuids = obj.characteristicUuids;
-        if(characteristicUuids) {
+        if (characteristicUuids) {
             for (var i = 0; i < characteristicUuids.length; i++) {
                 var characteristicUuid = characteristicUuids[i];
 
@@ -334,8 +340,7 @@ function characteristicsBatterySuccess(obj) {
             }
         }
         consoleLog('Error: Battery characteristic not found.');
-    }
-    else {
+    } else {
         consoleLog('Unexpected characteristics battery status: ' + obj.status);
     }
     disconnectDevice();
@@ -351,8 +356,7 @@ function discoverSuccess(obj) {
         consoleLog('Discovery completed');
 
         readBatteryLevel();
-    }
-    else {
+    } else {
         consoleLog('Unexpected discover status: ' + obj.status);
         disconnectDevice();
     }
@@ -365,7 +369,10 @@ function discoverError(obj) {
 
 function readBatteryLevel() {
     consoleLog('Reading battery level');
-    var paramsObj = {'serviceUuid': config.batteryServiceUuid, 'characteristicUuid': config.batteryLevelCharacteristicUuid};
+    var paramsObj = {
+        'serviceUuid': config.batteryServiceUuid,
+        'characteristicUuid': config.batteryLevelCharacteristicUuid
+    };
     btle.read(readSuccess, readError, paramsObj);
 }
 
@@ -375,11 +382,13 @@ function readSuccess(obj) {
         logIt(null, 'Battery level: ' + bytes[0]);
 
         consoleLog('Subscribing to heart rate for ' + config.timeout + ' seconds');
-        var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
+        var paramsObj = {
+            'serviceUuid': config.serviceUuid,
+            'characteristicUuid': config.measurementCharacteristicUuid
+        };
         btle.subscribe(subscribeSuccess, subscribeError, paramsObj);
         setTimeout(unsubscribeDevice, config.timeout);
-    }
-    else {
+    } else {
         consoleLog('Unexpected read status: ' + obj.status);
         disconnectDevice();
     }
@@ -412,8 +421,7 @@ function subscribeSuccess(obj) {
             var u16bytes = bytes.buffer.slice(1, 3);
             var u16 = new Uint16Array(u16bytes)[0];
             hr = u16;
-        }
-        else {
+        } else {
             var u8bytes = bytes.buffer.slice(1, 2);
             var u8 = new Uint8Array(u8bytes)[0];
             hr = u8;
@@ -421,11 +429,9 @@ function subscribeSuccess(obj) {
         consoleLog('Heart Rate: ' + hr);
 
         $(document).trigger('heart-rate', hr);
-    }
-    else if (obj.status === 'subscribed') {
+    } else if (obj.status === 'subscribed') {
         consoleLog('Subscription started');
-    }
-    else {
+    } else {
         consoleLog('Unexpected subscribe status: ' + obj.status);
         disconnectDevice();
     }
@@ -438,7 +444,10 @@ function subscribeError(obj) {
 
 function unsubscribeDevice() {
     consoleLog('Unsubscribing heart service');
-    var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid};
+    var paramsObj = {
+        'serviceUuid': config.serviceUuid,
+        'characteristicUuid': config.measurementCharacteristicUuid
+    };
     btle.unsubscribe(unsubscribeSuccess, unsubscribeError, paramsObj);
 }
 
@@ -447,10 +456,13 @@ function unsubscribeSuccess(obj) {
         consoleLog('Unsubscribed device');
 
         consoleLog('Reading client configuration descriptor');
-        var paramsObj = {'serviceUuid': config.serviceUuid, 'characteristicUuid': config.measurementCharacteristicUuid, 'descriptorUuid': config.clientCharacteristicConfigDescriptorUuid};
+        var paramsObj = {
+            'serviceUuid': config.serviceUuid,
+            'characteristicUuid': config.measurementCharacteristicUuid,
+            'descriptorUuid': config.clientCharacteristicConfigDescriptorUuid
+        };
         btle.readDescriptor(readDescriptorSuccess, readDescriptorError, paramsObj);
-    }
-    else {
+    } else {
         consoleLog('Unexpected unsubscribe status: ' + obj.status);
         disconnectDevice();
     }
@@ -467,8 +479,7 @@ function readDescriptorSuccess(obj) {
         var u16Bytes = new Uint16Array(bytes.buffer);
         consoleLog('Read descriptor value: ' + u16Bytes[0]);
         disconnectDevice();
-    }
-    else {
+    } else {
         consoleLog('Unexpected read descriptor status: ' + obj.status);
         disconnectDevice();
     }
@@ -487,11 +498,9 @@ function disconnectSuccess(obj) {
     if (obj.status === 'disconnected') {
         logIt(null, 'Disconnect device');
         closeDevice();
-    }
-    else if (obj.status === 'disconnecting') {
+    } else if (obj.status === 'disconnecting') {
         consoleLog('Disconnecting device');
-    }
-    else {
+    } else {
         consoleLog('Unexpected disconnect status: ' + obj.status);
     }
 }
@@ -507,8 +516,7 @@ function closeDevice() {
 function closeSuccess(obj) {
     if (obj.status === 'closed') {
         consoleLog('Closed device');
-    }
-    else {
+    } else {
         consoleLog('Unexpected close status: ' + obj.status);
     }
 }
@@ -519,23 +527,30 @@ function closeError(obj) {
 
 module.exports = {
 
-    config : function(newConfig, api){
-        if(newConfig) config  = _.extend(config, newConfig);
+    config: function(newConfig, api) {
+        if (newConfig) config = _.extend(config, newConfig);
 
-        if(api.logIt) logIt = api.logIt;
+        if (api.logIt) logIt = api.logIt;
     },
 
-    init : function () {
-        if(!btle){
+    init: function() {
+        if (!btle) {
             return consoleLog('BTLE Plugin not found :( ');
-        }else{
+        } else {
             consoleLog('BTLE Plugin exists');
         }
 
-        btle.initialize(initializeSuccess, initializeError);
+        btle.isInitialized(function(obj) {
+            if (obj.isInitialized) {
+                startScan();
+            } else {
+                btle.initialize(initializeSuccess, initializeError);
+            }
+        });
+
     },
 
-    destroy : function(){
+    destroy: function() {
         window.mobibluStorage.removeItem(config.addressKey);
     }
 
