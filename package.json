@@ -1,6 +1,6 @@
 {
   "name": "skynet-mobile-plugin-heartbeat",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Skynet Mobile Plugin for Heartbeat",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/octoblu/skynet-mobile-plugin-heartbeat",
   "devDependencies": {
-    "gulp": "~3.8.1",
+    "gulp": "~3.8.6",
     "gulp-browserify": "~0.5.0",
     "gulp-rename": "~1.2.0",
     "gulp-uglify": "~0.3.0"

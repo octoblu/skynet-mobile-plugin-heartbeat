@@ -1,6 +1,9 @@
+'use strict';
+
 var heartrate = require('./heartrate-btle.js');
 
 function Plugin(messenger, options, api, deviceName) {
+    console.log('Initialized HeartRate Plugin');
     var self = this;
 
     if(typeof deviceName === 'string') {
@@ -49,22 +52,6 @@ function Plugin(messenger, options, api, deviceName) {
     return self;
 }
 
-function getDefaultOptions(cb){
-    cb(null, {
-        timeout : 60 * 60 * 1000
-    });
-}
-
-var optionsSchema = {
-    type: 'object',
-    properties: {
-        timeout: {
-            type: 'integer',
-            required: true
-        }
-    }
-};
-
 // Mobile Specific
 Plugin.prototype.onEnable = function () {
     this.api.logActivity({
@@ -95,7 +82,5 @@ Plugin.prototype.destroy = function () {
 };
 
 module.exports = {
-    Plugin: Plugin,
-    optionsSchema : optionsSchema,
-    getDefaultOptions : getDefaultOptions
+    Plugin: Plugin
 };
