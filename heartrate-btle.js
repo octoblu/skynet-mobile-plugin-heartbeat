@@ -17,9 +17,16 @@ config.timeout = 60 * 60 * 1000;
 
 config.debug = true;
 
-var consoleLog = function(msg){
-    //if(!config.debug) return;
-    console.log(msg);
+var consoleLog = function(msg, obj){
+    // Is Debug
+    if(!config.debug) return;
+    // Is Undefined
+    if(_.isUndefined(obj)) obj = '';
+    // Is not string
+    if(!_.isString(obj)){
+        obj = JSON.stringify(obj);
+    }
+    console.log(msg + obj);
 };
 
 var logIt = function(){};
@@ -32,6 +39,7 @@ var iOSPlatform = 'iOS';
 var androidPlatform = 'Android';
 
 function initializeSuccess(obj) {
+    consoleLog('Initialized: ', obj);
     if (obj.status === 'initialized') {
         var address = window.mobibluStorage.getItem(config.addressKey);
         if (_.isEmpty(address)) {
@@ -515,17 +523,16 @@ module.exports = {
         if(newConfig) config  = _.extend(config, newConfig);
 
         if(api.logIt) logIt = api.logIt;
-
     },
 
     init : function () {
-
         if(!btle){
             return consoleLog('BTLE Plugin not found :( ');
+        }else{
+            consoleLog('BTLE Plugin exists');
         }
 
         btle.initialize(initializeSuccess, initializeError);
-
     },
 
     destroy : function(){

@@ -3,7 +3,6 @@
 var heartrate = require('./heartrate-btle.js');
 
 function Plugin(messenger, options, api, deviceName) {
-    console.log('Initialized HeartRate Plugin');
     var self = this;
 
     if(typeof deviceName === 'string') {
@@ -49,6 +48,8 @@ function Plugin(messenger, options, api, deviceName) {
         });
         logIt(null, 'Logged Heartbeat : ' + hr);
     });
+
+    console.log('Initialized HeartRate Plugin');
 
     return self;
 }
