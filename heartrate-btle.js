@@ -18,7 +18,7 @@ config.timeout = 60 * 60 * 1000;
 config.debug = true;
 
 var consoleLog = function(msg){
-    if(!config.debug) return;
+    //if(!config.debug) return;
     console.log(msg);
 };
 

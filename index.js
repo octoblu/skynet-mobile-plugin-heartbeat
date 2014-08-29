@@ -28,6 +28,7 @@ function Plugin(messenger, options, api, deviceName) {
         if(msg){
             obj.html = msg;
         }
+        console.log('logIt (HeartRate): ' + JSON.stringify(obj));
         self.api.logActivity(obj);
     };
 
